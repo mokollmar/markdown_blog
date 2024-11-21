@@ -1,3 +1,23 @@
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
-export const prerender = true;
+import type { PageLoad } from "./$types";
+
+export const prerender = true; // needed for Netlify deploy
+
+
+export const load: PageLoad = async () => {
+
+    try {
+        const article = "test123"
+        const post = await import(`../posts/${article}.md`)
+
+        return {
+            props: {
+                content: post.default,
+                meta: post.metadata,
+            }
+        }
+
+    } catch (e) {
+        console.log("IT'S AN ERROR")
+        console.log(e)
+    }
+}

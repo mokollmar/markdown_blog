@@ -1,6 +1,6 @@
 {
-	"name": "svelte-supabase-test",
-	"version": "0.0.1",
+	"name": "markdown-blog",
+	"version": "1.0.0",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -36,5 +36,11 @@
 		"flexsearch": "^0.7.43",
 		"path": "^0.12.7"
 	},
-	"type": "module"
+	"type": "module",
+	"pnpm": {
+		"ignoredBuiltDependencies": [
+			"@sveltejs/kit",
+			"esbuild"
+		]
+	}
 }

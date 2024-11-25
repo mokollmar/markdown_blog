@@ -1,16 +1,27 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+    import { onMount } from "svelte";
+    import type { Post } from "./proxy+page.js";
 
-	export let data;
+    export let data;
 
-	onMount(() => {
-		console.log(data);
-	});
+    let blog_list: Array<Post> | undefined = data?.posts;
+
+    onMount(() => {
+        console.log(data);
+        console.log(blog_list);
+    });
 </script>
 
-<div class="flex flex-col justify-center items-center space-y-12">
-	<h1 class="text-center font-bold text-5xl">{data.props?.meta.title}</h1>
-	<article class="prose w-full">
-		<svelte:component this={data?.props?.content} />
-	</article>
-</div>
+{#if blog_list}
+    <div class="flex flex-col">
+
+        <h1 class="text-center text-5xl my-5">My Blog</h1>
+
+        {#each blog_list as article}
+        <div class="flex flex-col p-5 m-5 bg-orange-400 rounded-lg">
+            <p class="font-bold">{article.title}</p>
+            <p>{article.description}</p>
+        </div>
+        {/each}
+    </div>
+{/if}

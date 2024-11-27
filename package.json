@@ -1,13 +1,17 @@
 {
 	"name": "markdown-blog",
 	"version": "1.0.0",
+	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "eslint ."
+		"format": "prettier --write .",
+		"lint": "prettier --check .",
+		"test:unit": "vitest",
+		"test": "npm run test:unit -- --run"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -36,7 +40,6 @@
 		"flexsearch": "^0.7.43",
 		"path": "^0.12.7"
 	},
-	"type": "module",
 	"pnpm": {
 		"ignoredBuiltDependencies": [
 			"@sveltejs/kit",

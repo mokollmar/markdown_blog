@@ -15,10 +15,12 @@ const mdsvexOptions = {
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: [vitePreprocess({ script: true }), mdsvex(mdsvexOptions)],
+	preprocess: [vitePreprocess({ script: true }), mdsvex(mdsvexOptions),],
+
 	kit: {
 		adapter: adapter()
 	},
+
 	extensions: ['.svelte', '.svx', '.md']
 };
 

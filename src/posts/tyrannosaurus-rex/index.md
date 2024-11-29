@@ -10,6 +10,11 @@ reading_time: 3
 ---
 
 
+<script lang="ts">
+  import ImageMd from "/src/lib/blog/components/ImageMd.svelte"
+</script>
+
+
 # The Mighty Tyrannosaurus Rex: King of the Dinosaurs
 
 ## Overview

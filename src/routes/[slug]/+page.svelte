@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import FallbackImage from "$lib/fallback_image.png";
+	import FallbackImage from "$lib/assets/fallback_image.png";
 
 	export let data;
 

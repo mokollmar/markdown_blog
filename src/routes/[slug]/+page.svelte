@@ -1,15 +1,16 @@
 <script lang="ts">
 	import FallbackImage from '$lib/blog/assets/fallback_image.png';
+	import { config, exportTOC, type ContentEntry } from '$lib/config';
 	import { onMount } from 'svelte';
 	import Breadcrumb from '$lib/Breadcrumb.svelte';
 	import Socials from '$lib/Socials.svelte';
 	import { page } from '$app/stores';
-	import { exportTOC, type ContentEntry } from '$lib/func';
 
 	export let data: any;
 
 	const metadata = data.props.meta;
 	const category = capitalize(data.props.meta.category.toString());
+	const profilePicture = config.profiles[metadata.authors[0]];
 
 	function capitalize(x: string) {
 		return x.charAt(0).toUpperCase() + x.slice(1);
@@ -79,6 +80,24 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{metadata.title}</title>
+
+	<meta content={metadata.description} name="description" />
+
+	<meta content={metadata.title} property="og:title" />
+	<meta content={data.props?.header_image} property="og:image" />
+	<meta content={config.siteUrl} property="og:url" />
+	<meta content={metadata.description} property="og:description" />
+	<meta content={config.siteName} property="og:site_name" />
+
+	<meta content={config.twitterHandle} name="twitter:creator" />
+	<meta content="summary_large_image" name="twitter:card" />
+	<meta content={metadata.title} name="twitter:title" />
+	<meta content={metadata.description} name="twitter:description" />
+	<meta content={data.props?.header_image} name="twitter:image" />
+</svelte:head>
+
 <div class="flex w-full scroll-mt-[100px] flex-col scroll-smooth">
 	<!-- Header -->
 	<div
@@ -86,13 +105,13 @@
 	>
 		<img
 			src={data.props?.header_image ?? FallbackImage}
-			style={`aspect-ratio: 4/5;`}
+			style={`aspect-ratio: ${config.image_ratio_view};`}
 			class="my-6 rounded-xl bg-indigo-500 object-cover"
 			alt="my_image"
 		/>
 
 		<div
-			style={`aspect-ratio: 4/5;`}
+			style={`aspect-ratio: ${config.image_ratio_view};`}
 			class="space-y-30 left-0 my-6 flex flex-col justify-center text-left"
 		>
 			<Breadcrumb metadata_category={metadata.category} metadata_name={category} />
@@ -106,7 +125,20 @@
 			<div class="flex w-full flex-col items-center justify-start pt-5 sm:flex-col sm:pt-0">
 				<div
 					class="flex w-full flex-row items-start justify-start space-x-3 pr-2 opacity-80 sm:pr-0 sm:pt-2"
-				></div>
+				>
+					<!-- Profile-->
+					<img
+						src={profilePicture['pic']}
+						class="h-8 w-8 rounded-full border-2 border-white object-contain sm:h-12 sm:w-12"
+						alt="my_profile"
+					/>
+
+					<p
+						class="text-overred-variant-blue text-md flex h-full flex-col items-center justify-center font-semibold opacity-50 sm:text-xl"
+					>
+						{profilePicture['txt']}
+					</p>
+				</div>
 				<!-- Date & Reading Time -->
 				<div
 					class="text-overred-variant-blue sm:text-md flex w-full flex-row items-start justify-start text-sm opacity-30 sm:pt-3"

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { blur } from 'svelte/transition';
 	import FallbackImage from '$lib/assets/fallback_image.png';
+	import { config } from '$lib/config.js';
 
 	interface Post {
 		title: string;
@@ -33,7 +34,7 @@
 		{#each blog_list as article}
 			<a
 				id="card"
-				href={`/${article.slug}`}
+				href={`${config.blogUrl}/${article.slug}`}
 				in:blur={{ delay: 500, duration: 500 }}
 				out:blur={{ duration: 500 }}
 				class="space-y-5 p-3"

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import { config } from '$lib/config';
 
 	export let src: string;
 	export let alt: string | null;
 
 	let slug: string;
-	let cut_index: number = ($page.url?.toString().match('/')?.length ?? 0) + 1;
+	let cut_index: number = (config.blogUrl.match('/')?.length ?? 0) + 1;
 
 	onMount(() => (slug = $page.url.pathname.split('/')[cut_index]));
 </script>

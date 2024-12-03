@@ -1,6 +1,6 @@
-import { getHeaderImage } from "$lib/func";
 import { error } from "@sveltejs/kit";
 import type { PageLoad } from './$types';
+import { getHeaderImage } from "$lib/config";
 
 export const prerender = true; // needed for Netlify deploy
 

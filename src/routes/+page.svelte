@@ -1,12 +1,11 @@
 <script lang="ts">
+	import { page } from '$app/stores';
+	import { afterNavigate, replaceState } from '$app/navigation';
+	import { config } from '$lib/config';
 	import { blur } from 'svelte/transition';
 	import FallbackImage from '$lib/assets/fallback_image.png';
-	import { config } from '$lib/config.js';
-	import { afterNavigate, replaceState } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
 
-	interface Post {
+	interface PostMetadata {
 		title: string;
 		description: string;
 		date: string;
@@ -14,14 +13,18 @@
 		published: boolean;
 		authors: Array<string>;
 		reading_time: number;
-		slug: string | null;
-		content: string | null;
+	}
+
+	interface BlogArticle {
+		meta: PostMetadata;
+		slug: string;
 		header_image: any;
 	}
 
-	export let data;
+	export let data: any;
+	let blog_list: Array<BlogArticle>;
 
-	let blog_list: Array<Post> | undefined = data.posts
+	let didNavigate: boolean = false;
 
 	enum FilterBy {
 		Date,
@@ -29,14 +32,18 @@
 		News
 	}
 
+	// for search:
+	let search: 'loading' | 'ready' = 'loading';
+	let searchTerm = '';
+	let worker: Worker;
 	let categories = [
 		{ title: 'Latest', state: true, key: 'date' },
 		{ title: 'Comparison', state: false, key: 'comparison' },
 		{ title: 'News', state: false, key: 'news' }
 	];
-
 	function filterList(filter: FilterBy) {
-		if (!blog_list) return;
+		blog_list = data.posts;
+
 		if (filter === FilterBy.Date) {
 			blog_list = [...blog_list].sort((a, b) => {
 				const aa_data = a.meta.date.split('.');
@@ -85,6 +92,9 @@
 	}
 
 	afterNavigate(() => {
+		didNavigate = true;
+
+		// get params:
 		const params = new URLSearchParams($page.url.search);
 		const tag_param = params.get('tag');
 		if (tag_param) selectCategory(tag_param);
@@ -92,11 +102,10 @@
 	});
 </script>
 
-{#if blog_list}
-	<div class="flex flex-col">
-		<h1 class="my-5 text-center text-5xl">My Blog</h1>
-
-		<!-- Categories: -->
+<div
+	class="flex h-full w-full flex-col items-center justify-center rounded-lg border-opacity-50 p-12 text-sm transition-all duration-500"
+>
+	{#if didNavigate}
 		<div
 			class="my-6 flex w-full flex-row justify-between space-x-3 overflow-x-scroll px-6 sm:mx-[5%] sm:my-12 sm:w-min sm:space-x-24 sm:px-0"
 		>
@@ -110,50 +119,94 @@
 				</button>
 			{/each}
 		</div>
+		{#if blog_list?.length}
+			{#each blog_list as entry}
+				<a
+					id="card"
+					href={`${config.blogUrl}/${entry.slug}`}
+					in:blur={{ delay: 500, duration: 500 }}
+					out:blur={{ duration: 500 }}
+					class="space-y-5 p-3"
+				>
+					<img
+						src={entry?.header_image ?? FallbackImage}
+						style="aspect-ratio: {config.image_ratio_list};"
+						class="w-full rounded-md object-cover"
+						alt="my_image"
+					/>
 
-		{#each blog_list as article}
-			<a
-				id="card"
-				href={`${config.blogUrl}/${article.slug}`}
-				in:blur={{ delay: 500, duration: 500 }}
-				out:blur={{ duration: 500 }}
-				class="space-y-5 p-3"
-			>
-				<img
-					src={article?.header_image ?? FallbackImage}
-					style="aspect-ratio: 4/5;"
-					class="w-full rounded-md object-cover"
-					alt="my_image"
-				/>
+					<div class="flex flex-col items-start justify-center space-y-3 px-6 pb-2 text-start">
+						<p class="text-overred-red line-clamp-1 text-lg font-medium text-opacity-80">
+							{entry.meta.category.toString().toUpperCase()}
+						</p>
+						<p
+							style="min-height: 2.5rem;"
+							class="text-overred-variant-blue flex items-center justify-start text-start text-2xl font-medium"
+						>
+							{@html entry.meta.title}
+						</p>
+						<p style="min-height: 4rem;" class="text-md line-clamp-3">
+							{@html entry.meta.description}
+						</p>
 
-				<div class="flex flex-col items-start justify-center space-y-3 px-6 pb-2 text-start">
-					<p class="text-overred-red line-clamp-1 text-lg font-medium text-opacity-80">
-						{article.category.toString().toUpperCase()}
-					</p>
-					<p
-						style="min-height: 2.5rem;"
-						class="text-overred-variant-blue flex items-center justify-start text-start text-2xl font-medium"
-					>
-						{@html article.title}
-					</p>
-					<p style="min-height: 4rem;" class="text-md line-clamp-3">
-						{@html article.description}
-					</p>
+						<div class="flex flex-row items-center justify-center space-x-3 pt-2">
+							<img
+								src={config.profiles[entry.meta.authors[0] ?? '_']['pic']}
+								class="h-12 w-12 rounded-full border-2 border-white object-contain"
+								alt="my_profile"
+							/>
 
-					<div class="flex flex-row items-center justify-center space-x-3 pt-2">
-						<div class="flex flex-col">
-							<p class="text-overred-variant-blue text-sm font-semibold italic text-opacity-80">
-								{@html `It's me!`}
-							</p>
-							<div class="text-overred-variant-blue flex flex-row text-sm text-opacity-70">
-								<p class="italic">{`${article.date}`}</p>
-								<span class="flex items-center justify-center px-1">&bull;</span>
-								<p class="italic">{`${article.reading_time} min`}</p>
+							<div class="flex flex-col">
+								<p class="text-overred-variant-blue text-sm font-semibold italic text-opacity-80">
+									{@html `${config.profiles[entry.meta.authors[0] ?? '_']['txt']}`}
+								</p>
+								<div class="text-overred-variant-blue flex flex-row text-sm text-opacity-70">
+									<p class="italic">{`${entry.meta.date}`}</p>
+									<span class="flex items-center justify-center px-1">&bull;</span>
+									<p class="italic">{`${entry.meta.reading_time} min`}</p>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			</a>
-		{/each}
-	</div>
-{/if}
+				</a>
+			{/each}
+		{:else}
+			<div
+				style="color: rgb(250, 116, 139);"
+				class="flex min-h-[50vh] flex-grow flex-col items-center justify-center text-2xl font-bold sm:text-3xl"
+			>
+				Nothing found, ¯\\_(ツ)_/¯
+			</div>
+		{/if}
+	{/if}
+</div>
+
+<style>
+	#category_btn {
+		border: 5px rgb(203 213 225) solid;
+		border-radius: 10px;
+		max-width: 100%;
+		width: 250px;
+		transition: all;
+		transition-duration: 250ms;
+	}
+	#category_btn:hover {
+		border: 5px rgb(250 116 139) solid;
+	}
+	#category_btn.active_X {
+		border: 5px rgb(250 116 139) solid;
+	}
+	#card {
+		width: 400px;
+		max-width: w-full;
+		border-radius: 0.5rem;
+		border: 5px rgb(203 213 225) solid;
+		transition-property: all;
+		transition-duration: 500ms;
+		margin: 50px;
+	}
+	#card:hover {
+		border: 5px rgb(250 116 139) solid;
+		scale: 1.025;
+	}
+</style>

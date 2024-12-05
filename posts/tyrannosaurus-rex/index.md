@@ -11,7 +11,7 @@ reading_time: 3
 
 
 <script lang="ts">
-  import ImageMd from "/src/lib/ImageMd.svelte"
+  import ImageMd from "/src/lib/blog/components/ImageMd.svelte"
 </script>
 
 

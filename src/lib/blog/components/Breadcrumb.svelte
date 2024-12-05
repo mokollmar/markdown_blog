@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { config } from '$lib/config';
+	import { config } from '$lib/blog/config';
 
     export let metadata_category
     export let metadata_name

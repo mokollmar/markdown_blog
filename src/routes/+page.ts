@@ -1,4 +1,4 @@
-import { getHeaderImage } from '$lib/config';
+import { getHeaderImage } from '$lib/blog/config';
 import type { PageLoad } from './$types';
 
 export const prerender = true;

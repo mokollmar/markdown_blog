@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { config } from '$lib/config';
+	import { config } from '$lib/blog/config';
 
 	export let src: string;
 	export let alt: string | null;

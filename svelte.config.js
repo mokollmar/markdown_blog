@@ -6,8 +6,7 @@ import { mdsvex } from 'mdsvex';
 const mdsvexOptions = {
 	extensions: [".md"],
 	layout: {
-		blog: "src/lib/BlogPost.svelte",
-		_: "src/lib/BlogPost.svelte",
+		_: 'src/lib/blog/layout/post.svelte',
 	},
 	remarkPlugins: [],
 }

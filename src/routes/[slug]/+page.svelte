@@ -1,9 +1,9 @@
 <script lang="ts">
 	import FallbackImage from '$lib/blog/assets/fallback_image.png';
-	import { config, exportTOC, type ContentEntry } from '$lib/config';
+	import { config, exportTOC, type ContentEntry } from '$lib/blog/config';
 	import { onMount } from 'svelte';
-	import Breadcrumb from '$lib/Breadcrumb.svelte';
-	import Socials from '$lib/Socials.svelte';
+	import Breadcrumb from '$lib/blog/components/Breadcrumb.svelte';
+	import Socials from '$lib/blog/components/Socials.svelte';
 	import { page } from '$app/stores';
 
 	export let data: any;

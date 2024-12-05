@@ -1,16 +1,14 @@
-import { error } from "@sveltejs/kit";
+import { getHeaderImage } from '$lib/blog/config';
 import type { PageLoad } from './$types';
-import { getHeaderImage } from "$lib/config";
-
-export const prerender = true; // needed for Netlify deploy
+import { error } from '@sveltejs/kit'
 
 export const load: PageLoad = async ({ params }) => {
 
     try {
-        const post = await import(`../../posts/${params.slug}/index.md`)
+        const post = await import(`../../../posts/${params.slug}/index.md`)
 
         // get Header Image
-        const allHeaderImages = import.meta.glob('../../posts/*/header/*', { eager: true });
+        const allHeaderImages = import.meta.glob('/posts/*/header/*', { eager: true });
         const interableHeaderImages = Object.entries(allHeaderImages)
         const header_image = getHeaderImage(params.slug, interableHeaderImages)
 

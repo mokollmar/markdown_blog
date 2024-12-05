@@ -1,6 +1,6 @@
 
-import profile_picture from '$lib/assets/profile_picture.jpeg';
-import fallback_profile from '$lib/assets/fallback_profile.webp';
+import profile_picture from '$lib/blog/assets/profile_picture.jpeg';
+import fallback_profile from '$lib/blog/assets/fallback_profile.webp';
 
 // Config
 interface Config {

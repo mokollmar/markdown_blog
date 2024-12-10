@@ -1,18 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { afterNavigate, replaceState } from '$app/navigation';
+	import { startIndexing, type PostMetadata, type SearchPost } from '$lib/blog/search/search';
+	import SearchBar from '$lib/blog/search/searchBar.svelte';
 	import CardWrapper from '$lib/blog/layout/cardWrapper.svelte';
 	import Card from '$lib/blog/layout/card.svelte';
-
-	interface PostMetadata {
-		title: string;
-		description: string;
-		date: string;
-		category: string;
-		published: boolean;
-		authors: Array<string>;
-		reading_time: number;
-	}
+	import { page } from '$app/stores';
 
 	interface BlogArticle {
 		meta: PostMetadata;
@@ -21,6 +13,8 @@
 	}
 
 	export let data: any;
+	const search_obj: Array<SearchPost> | null = data.search_obj;
+
 	let blog_list: Array<BlogArticle>;
 
 	let didNavigate: boolean = false;
@@ -55,6 +49,14 @@
 				return element.meta.category === 'news';
 			});
 		}
+		const _search_obj = blog_list.map(({ slug, header_image, meta }) => ({
+			slug,
+			header_image,
+			...meta
+		}));
+		console.error('HERE');
+		console.log(_search_obj);
+		if (searchTerm && blog_list) startIndexing(_search_obj);
 	}
 	function selectCategory(key: string | null) {
 		if (!key) return;
@@ -85,20 +87,49 @@
 		}
 	}
 
+	let searchTerm = '';
+
 	afterNavigate(() => {
 		didNavigate = true;
 
-		// get params:
 		const params = new URLSearchParams($page.url.search);
 		const tag_param = params.get('tag');
+		const q_param = params.get('q');
+
+		// get search params
+		if (q_param) searchTerm = q_param;
+		if (q_param) startIndexing(search_obj);
 		if (tag_param) selectCategory(tag_param);
 		else filterList(FilterBy.Date);
 	});
+
+	// update SearchParams:
+	let _o_searchTerm: string = '';
+	$: if (searchTerm != _o_searchTerm && didNavigate) {
+		startIndexing(search_obj);
+		$page.url.searchParams.set('q', searchTerm);
+		try {
+			replaceState($page.url, $page.state);
+		} catch (error) {
+			console.log("Couldn't change url");
+		}
+		_o_searchTerm = searchTerm;
+		const results = searchTerm(searchTerm as string);
+		blog_list = results.map(({ slug, header_image, ...meta }: BlogArticle) => ({
+			meta,
+			slug: slug ?? '/',
+			header_image
+		}));
+		blog_list = [...blog_list];
+	}
 </script>
 
 <div
 	class="flex h-full w-full flex-col items-center justify-center rounded-lg border-opacity-50 p-12 text-sm transition-all duration-500"
 >
+	<!-- Search input -> mobile -->
+	<SearchBar bind:searchTerm />
+
 	{#if didNavigate}
 		<div
 			class="my-6 flex w-full flex-row justify-between space-x-3 overflow-x-scroll px-6 sm:mx-[5%] sm:my-12 sm:w-min sm:space-x-24 sm:px-0"

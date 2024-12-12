@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import SearchWorker from '$lib/blog/search/searchWorker?worker';
 	import { afterNavigate, replaceState } from '$app/navigation';
-	import { startIndexing, type PostMetadata, type SearchPost } from '$lib/blog/search/search';
+	import type { PostMetadata, SearchPost } from '$lib/blog/search/search';
 	import SearchBar from '$lib/blog/search/searchBar.svelte';
 	import CardWrapper from '$lib/blog/layout/cardWrapper.svelte';
 	import Card from '$lib/blog/layout/card.svelte';
-	import { page } from '$app/stores';
 
 	interface BlogArticle {
 		meta: PostMetadata;
@@ -24,6 +26,11 @@
 		Comparison,
 		News
 	}
+
+	// for search:
+	let search: 'loading' | 'ready' = 'loading';
+	let searchTerm = '';
+	let worker: Worker;
 	let categories = [
 		{ title: 'Latest', state: true, key: 'date' },
 		{ title: 'Comparison', state: false, key: 'comparison' },
@@ -49,6 +56,11 @@
 				return element.meta.category === 'news';
 			});
 		}
+		console.log('+#+');
+		console.log(search);
+		console.log('Search for: ');
+		console.log(blog_list);
+		search = 'loading';
 		const _search_obj = blog_list.map(({ slug, header_image, meta }) => ({
 			slug,
 			header_image,
@@ -56,7 +68,8 @@
 		}));
 		console.error('HERE');
 		console.log(_search_obj);
-		if (searchTerm && blog_list) startIndexing(_search_obj);
+		if (searchTerm && blog_list)
+			worker.postMessage({ type: 'load', payload: { search_obj: _search_obj } });
 	}
 	function selectCategory(key: string | null) {
 		if (!key) return;
@@ -87,10 +100,24 @@
 		}
 	}
 
-	let searchTerm = '';
-
 	afterNavigate(() => {
 		didNavigate = true;
+
+		// init worker and add listener:
+		worker = new SearchWorker();
+		worker.addEventListener('message', (event) => {
+			const { type, payload } = event.data;
+			console.log(`Worker State: ${type}`);
+			if (type === 'ready') search = type;
+			if (type === 'results') {
+				blog_list = payload.results.map(({ slug, header_image, ...meta }: BlogArticle) => ({
+					meta,
+					slug: slug ?? '/',
+					header_image
+				}));
+				blog_list = [...blog_list];
+			}
+		});
 
 		const params = new URLSearchParams($page.url.search);
 		const tag_param = params.get('tag');
@@ -98,7 +125,7 @@
 
 		// get search params
 		if (q_param) searchTerm = q_param;
-		if (q_param) startIndexing(search_obj);
+		if (q_param) worker.postMessage({ type: 'load', payload: { search_obj } });
 		if (tag_param) selectCategory(tag_param);
 		else filterList(FilterBy.Date);
 	});
@@ -106,7 +133,7 @@
 	// update SearchParams:
 	let _o_searchTerm: string = '';
 	$: if (searchTerm != _o_searchTerm && didNavigate) {
-		startIndexing(search_obj);
+		worker.postMessage({ type: 'load', payload: { search_obj } });
 		$page.url.searchParams.set('q', searchTerm);
 		try {
 			replaceState($page.url, $page.state);
@@ -114,13 +141,10 @@
 			console.log("Couldn't change url");
 		}
 		_o_searchTerm = searchTerm;
-		const results = searchTerm(searchTerm as string);
-		blog_list = results.map(({ slug, header_image, ...meta }: BlogArticle) => ({
-			meta,
-			slug: slug ?? '/',
-			header_image
-		}));
-		blog_list = [...blog_list];
+	}
+
+	$: if (search === 'ready') {
+		worker.postMessage({ type: 'search', payload: { search_term: searchTerm } });
 	}
 </script>
 
